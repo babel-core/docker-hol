@@ -1,15 +1,48 @@
 # Docker Image 생성하기
 
-```Bash
-$ sudo docker images -q -f dangling=true
+## 이미지 필터링하기
 
-$ sudo docker ps -q -f status=exited
+```Bash
+$ sudo docker images
+REPOSITORY   TAG        IMAGE ID       CREATED             SIZE
+<none>       <none>     07abe535eced   12 seconds ago      446 MB
+myubuntu     16.04      7f9d552f6819   About an hour ago   162 MB
 ```
+
+```Bash
+$ sudo docker images -f dangling=true
+REPOSITORY   TAG        IMAGE ID       CREATED             SIZE
+<none>       <none>     07abe535eced   12 seconds ago      446 MB
+```
+
+> Quiz : IMAGE ID만을 추출하기 위한 argument는 -?
+
+docker images의 필터에 대하여 자세히 살펴보려면 다음을 참조 ![Filter 상세보기](https://docs.docker.com/engine/reference/commandline/images/#filtering)
+
+## 컨테이너 필터링하기
+
+```Bash
+$ sudo docker ps -a
+CONTAINER ID    ...     STATUS                      PORTS      NAMES
+8e255f6e100a    ...     Exited (127) 37 hours ago              u1
+5a5872bbd540    ...     Up 2 hours ago                         u2
+```
+
+
+```Bash
+$ sudo docker ps -f status=exited
+CONTAINER ID    ...     STATUS                      PORTS      NAMES
+8e255f6e100a    ...     Exited (127) 37 hours ago              u1
+```
+docker ps의 필터에 대하여 자세히 살펴보려면 다음을 참조 ![Filter 상세보기](https://docs.docker.com/engine/reference/commandline/ps/#filtering)
 
 ## 첫번째 Docker 이미지 빌드하기
 
-Docker를 빌드하기 위해서는 Dockerfile이 필요하다.
-여기서 중요한 포인트는 2가지이다. 파일명이 정화해야 한다는 것이다. Dockerfile
+Docker를 빌드하는 과정에서 처음 해야하는 일은 Dockerfile을 작성하는 것이다. Dockerfile은
+빌드를 위한 시나리오이 기술되어 있다. docker engine이 작성한 시나리오를 이해하기 위하여 일정한
+형식을 가지고 있다.
+
+우리는 일정한 실습을 통하여 시나리오 작성에 필요한 문법들을 파악할 수 있다.
 
 ```Bash
 $ mkdir 1-dangling

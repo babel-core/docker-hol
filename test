@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+ES='http://localhost:9200'
+ESIDX='seunjeon-idx'
+
+echo "put setting"
+curl -XPUT "${ES}/${ESIDX}/?pretty" -d '{
+  "settings" : {
+    "index":{
+      "analysis":{
+        "analyzer":{
+          "korean":{
+            "type":"custom",
+            "tokenizer":"seunjeon_default_tokenizer"
+          }
+        },
+        "tokenizer": {
+          "seunjeon_default_tokenizer": {
+            "type": "mecab_ko_standard_tokenizer",
+            "mecab_args": "/usr/local/lib/mecab/dic/mecab-ko-dic"
+          }
+        }
+      }
+    }
+  }
+}'
+
+sleep 1
+
+echo "========================================================================"
+curl -XGET "${ES}/${ESIDX}/_analyze?analyzer=korean&pretty" -d '삼성전자'
+echo "========================================================================"
+curl -XGET "${ES}/${ESIDX}/_analyze?analyzer=korean&pretty" -d '빨라짐'
+echo "========================================================================"
+curl -XGET "${ES}/${ESIDX}/_analyze?analyzer=korean&pretty" -d '낄끼빠빠 어그로'
+echo "========================================================================"
+curl -XGET "${ES}/${ESIDX}/_analyze?analyzer=korean&pretty" -d '미노야 오늘 밤에 밥 한번 만들어줘라 바비동생이 너무 빠르게 밥먹다 체했다 미노가 빠르던 느리던 꼭꼭 씹어서 먹는법 좀 알려줘라'
+
+echo "delete index"
+curl -XDELETE "${ES}/${ESIDX}?pretty"

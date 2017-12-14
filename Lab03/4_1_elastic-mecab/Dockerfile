@@ -10,12 +10,13 @@ RUN wget -O - https://bitbucket.org/eunjeon/mecab-ko/downloads/mecab-0.996-ko-0.
 RUN cd mecab-0.996-ko-0.9.2; ./configure; make; make install; ldconfig
 
 # Mecab-Ko-Dic
-# RUN wget -O - https://bitbucket.org/eunjeon/mecab-ko-dic/downloads/mecab-ko-dic-2.0.1-20150707.tar.gz | tar zxfv -
-# RUN wget -O - https://bitbucket.org/eunjeon/mecab-ko-dic/downloads/mecab-ko-dic-2.0.1-20150825.tar.gz | tar zxfv -
 RUN wget -O - https://bitbucket.org/eunjeon/mecab-ko-dic/downloads/mecab-ko-dic-2.0.1-20150920.tar.gz | tar zxfv -
 RUN cd mecab-ko-dic-2.0.1-20150920; sh ./autogen.sh
 RUN cd mecab-ko-dic-2.0.1-20150920; ./configure; make; make install; ldconfig
 
+# ElasticSearch
 RUN wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.2.0.tar.gz | tar zxfv -
 
-CMD ["mecab"]
+EXPOSE 9200
+
+CMD ["/bin/bash"]

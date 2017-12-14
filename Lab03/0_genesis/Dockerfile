@@ -1,6 +1,7 @@
 FROM scratch
-MAINTAINER byjeon <byjeon@miracom.co.kr>
+MAINTAINER byjeon <mysummit@gmail.com>
 
+# Add file
 ADD busybox.tar.xz /
 
 CMD ["sh"]

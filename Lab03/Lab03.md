@@ -1,308 +1,85 @@
-# Docker Image 생성하기
+# Lab 3. 나만의 Docker 이미지 만들기
 
-## 이미지 필터링하기
+## `docker build` 맛보기
+docker의 가장 근원이 되는 이미지는 `scratch` 이미지이다.
+여기서는 scratch 이미지를 이용하여 가장 기본적인 이미지를 생성하는 실습을 진행한다.
+
+- Image Name : genesis
+
+```Dockerfile
+FROM scratch
+MAINTAINER byjeon <mysummit@gmail.com>
+
+# Add file
+ADD busybox.tar.xz /
+
+CMD ["sh"]
+```
+
+```tree
+$ tree
+.
+├── Dockerfile
+└── busybox.tar.xz
+```
 
 ```Bash
+$ sudo docker build --help
+
+Usage:	docker build [OPTIONS] PATH | URL | -
+
+Build an image from a Dockerfile
+
+Options:
+      --build-arg list             Set build-time variables (default [])
+      --cache-from stringSlice     Images to consider as cache sources
+      --cgroup-parent string       Optional parent cgroup for the container
+      --compress                   Compress the build context using gzip
+      --cpu-period int             Limit the CPU CFS (Completely Fair Scheduler) period
+      --cpu-quota int              Limit the CPU CFS (Completely Fair Scheduler) quota
+  -c, --cpu-shares int             CPU shares (relative weight)
+      --cpuset-cpus string         CPUs in which to allow execution (0-3, 0,1)
+      --cpuset-mems string         MEMs in which to allow execution (0-3, 0,1)
+      --disable-content-trust      Skip image verification (default true)
+  -f, --file string                Name of the Dockerfile (Default is 'PATH/Dockerfile')
+      --force-rm                   Always remove intermediate containers
+      --help                       Print usage
+      --isolation string           Container isolation technology
+      --label list                 Set metadata for an image (default [])
+  -m, --memory string              Memory limit
+      --memory-swap string         Swap limit equal to memory plus swap: '-1' to enable unlimited swap
+      --network string             Set the networking mode for the RUN instructions during build (default "default")
+      --no-cache                   Do not use cache when building the image
+      --pull                       Always attempt to pull a newer version of the image
+  -q, --quiet                      Suppress the build output and print image ID on success
+      --rm                         Remove intermediate containers after a successful build (default true)
+      --security-opt stringSlice   Security options
+      --shm-size string            Size of /dev/shm, default value is 64MB
+  -t, --tag list                   Name and optionally a tag in the 'name:tag' format (default [])
+      --ulimit ulimit              Ulimit options (default [])
+```
+
+```bash
+$ sudo docker build --tag genesis .
+Sending build context to Docker daemon 597.5 kB
+Step 1/4 : FROM scratch
+ --->
+Step 2/4 : MAINTAINER byjeon <mysummit@gmail.com>
+ ---> Running in b83affeca271
+ ---> d15161ed7223
+Removing intermediate container b83affeca271
+Step 3/4 : ADD busybox.tar.xz /
+ ---> f1d06a3e6b5d
+Removing intermediate container a944e7f7d7d6
+Step 4/4 : CMD sh
+ ---> Running in 1d8d7db6ad56
+ ---> c5de1cf67f83
+Removing intermediate container 1d8d7db6ad56
+Successfully built c5de1cf67f83
+```
+
+```bash
 $ sudo docker images
-REPOSITORY   TAG        IMAGE ID       CREATED             SIZE
-<none>       <none>     07abe535eced   12 seconds ago      446 MB
-myubuntu     16.04      7f9d552f6819   About an hour ago   162 MB
+REPOSITORY     TAG       IMAGE ID         CREATED          SIZE
+genesis        latest    c5de1cf67f83     29 seconds ago   1.13 MB
 ```
-
-```Bash
-$ sudo docker images -f dangling=true
-REPOSITORY   TAG        IMAGE ID       CREATED             SIZE
-<none>       <none>     07abe535eced   12 seconds ago      446 MB
-```
-
-> Quiz : IMAGE ID만을 추출하기 위한 argument는 -?
-
-docker images의 필터에 대하여 자세히 살펴보려면 다음을 참조 ![Filter 상세보기](https://docs.docker.com/engine/reference/commandline/images/#filtering)
-
-## 컨테이너 필터링하기
-
-```Bash
-$ sudo docker ps -a
-CONTAINER ID    ...     STATUS                      PORTS      NAMES
-8e255f6e100a    ...     Exited (127) 37 hours ago              u1
-5a5872bbd540    ...     Up 2 hours ago                         u2
-```
-
-
-```Bash
-$ sudo docker ps -f status=exited
-CONTAINER ID    ...     STATUS                      PORTS      NAMES
-8e255f6e100a    ...     Exited (127) 37 hours ago              u1
-```
-docker ps의 필터에 대하여 자세히 살펴보려면 다음을 참조 ![Filter 상세보기](https://docs.docker.com/engine/reference/commandline/ps/#filtering)
-
-## 첫번째 Docker 이미지 빌드하기
-
-Docker를 빌드하는 과정에서 처음 해야하는 일은 Dockerfile을 작성하는 것이다. Dockerfile은
-빌드를 위한 시나리오이 기술되어 있다. docker engine이 작성한 시나리오를 이해하기 위하여 일정한
-형식을 가지고 있다.
-
-우리는 일정한 실습을 통하여 시나리오 작성에 필요한 문법들을 파악할 수 있다.
-
-```Bash
-$ mkdir 1-dangling
-$ cd 1-dangling
-$ vi Dockerfile
-```
-
-```Dockerfile
-FROM ubuntu:16.04
-
-ENTRYPOINT ["/bin/echo"]
-```
-
-```Bash
-$ mkdir 2-hello
-$ cd 2-hello
-$ vi Dockerfile
-```
-
-```Dockerfile
-FROM ubuntu:16.04
-
-CMD ["/bin/echo", "Hello Docker!"]
-```
-
-
-```Bash
-$ sudo docker build -t babel:hello .
-Sending build context to Docker daemon 2.048 kB
-Step 1/2 : FROM ubuntu:16.04
- ---> 20c44cd7596f
-Step 2/2 : CMD /bin/echo Hi Docker!
- ---> Running in db52dd9d98fd
- ---> 249cee17323d
-Removing intermediate container db52dd9d98fd
-Successfully built 249cee17323d
-```
-
-```Bash
-$ sudo docker run 249cee17323d
-Hi Docker!
-```
-
-```Bash
-$ sudo docker build .
-Sending build context to Docker daemon 2.048 kB
-Step 1/2 : FROM ubuntu:16.04
- ---> 20c44cd7596f
-Step 2/2 : ENTRYPOINT /bin/echo
- ---> Running in ede1e5cbf99d
- ---> 08cde8ab3bdb
-Removing intermediate container ede1e5cbf99d
-Successfully built 08cde8ab3bdb
-```
-
-```Dockerfile
-FROM myubuntu:16.04
-MAINTAINER byjeon <byjeon@miracom.co.kr>
-
-RUN apt-get install python3
-RUN apt-get install python3-pip
-
-CMD ["/bin/bash", "python3"]
-```
-
-```Bash
-$ sudo docker build -t mypython3:fault .
-```
-
-```Dockerfile
-FROM myubuntu:16.04
-MAINTAINER byjeon <byjeon@miracom.co.kr>
-RUN apt-get install -y python3 python3-pip
-
-CMD ["/bin/bash", "python3"]
-```
-
-```Bash
-$ sudo docker build -t mypython3:base .
-```
-
-```Bash
-$ sudo docker images
-REPOSITORY   TAG     IMAGE ID       CREATED             SIZE
-mypython3    base    07abe535eced   12 seconds ago      446 MB
-myubuntu     16.04   7f9d552f6819   About an hour ago   162 MB
-```
-
-## Application #1 : Flask App 배포하기
-
-```Dockerfile
-FROM ubuntu:16.04
-MAINTAINER byjeon <byjeon@miracom.co.kr>
-RUN apt-get install -y python3 python3-pip && \
-    apt-get clean all && \
-    pip3 install flask
-
-ADD hello.py /apps/hello.py
-
-EXPOSE 5000
-
-CMD ["python3", "/apps/hello.py"]
-```
-
-
-## 개선하기
-
-```Dockerfile
-FROM ubuntu:16.04
-MAINTAINER byjeon <byjeon@miracom.co.kr>
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \    
-    apt-get clean all
-RUN pip3 install flask
-
-ADD hello.py /apps/hello.py
-
-EXPOSE 5000 9200
-
-CMD ["python3", "/apps/hello.py"]
-```
-
-
- ```Bash
- $ sudo docker images -q -f dangling=true
-
- $ sudo docker ps -q -f status=exited
- ```
-
- ## 첫번째 Docker 이미지 빌드하기
-
- Docker를 빌드하기 위해서는 Dockerfile이 필요하다.
- 여기서 중요한 포인트는 2가지이다. 파일명이 정화해야 한다는 것이다. Dockerfile
-
- ```Bash
- $ mkdir 1-dangling
- $ cd 1-dangling
- $ vi Dockerfile
- ```
-
- ```Dockerfile
- FROM ubuntu:16.04
-
- ENTRYPOINT ["/bin/echo"]
- ```
-
- ```Bash
- $ mkdir 2-hello
- $ cd 2-hello
- $ vi Dockerfile
- ```
-
- ```Dockerfile
- FROM ubuntu:16.04
-
- CMD ["/bin/echo", "Hello Docker!"]
- ```
-
-
- ```Bash
- $ sudo docker build -t babel:hello .
- Sending build context to Docker daemon 2.048 kB
- Step 1/2 : FROM ubuntu:16.04
-  ---> 20c44cd7596f
- Step 2/2 : CMD /bin/echo Hi Docker!
-  ---> Running in db52dd9d98fd
-  ---> 249cee17323d
- Removing intermediate container db52dd9d98fd
- Successfully built 249cee17323d
- ```
-
- ```Bash
- $ sudo docker run 249cee17323d
- Hi Docker!
- ```
-
- ```Bash
- $ sudo docker build .
- Sending build context to Docker daemon 2.048 kB
- Step 1/2 : FROM ubuntu:16.04
-  ---> 20c44cd7596f
- Step 2/2 : ENTRYPOINT /bin/echo
-  ---> Running in ede1e5cbf99d
-  ---> 08cde8ab3bdb
- Removing intermediate container ede1e5cbf99d
- Successfully built 08cde8ab3bdb
- ```
-
- ```Dockerfile
- FROM myubuntu:16.04
- MAINTAINER byjeon <byjeon@miracom.co.kr>
-
- RUN apt-get install python3
- RUN apt-get install python3-pip
-
- CMD ["/bin/bash", "python3"]
- ```
-
- ```Bash
- $ sudo docker build -t mypython3:fault .
- ```
-
- ```Dockerfile
- FROM myubuntu:16.04
- MAINTAINER byjeon <byjeon@miracom.co.kr>
- RUN apt-get install -y python3 python3-pip
-
- CMD ["/bin/bash", "python3"]
- ```
-
- ```Bash
- $ sudo docker build -t mypython3:base .
- ```
-
- ```Bash
- $ sudo docker images
- REPOSITORY   TAG     IMAGE ID       CREATED             SIZE
- mypython3    base    07abe535eced   12 seconds ago      446 MB
- myubuntu     16.04   7f9d552f6819   About an hour ago   162 MB
- ```
-
- ## Application #1 : Flask App 배포하기
-
- ```Dockerfile
- FROM ubuntu:16.04
- MAINTAINER byjeon <byjeon@miracom.co.kr>
- RUN apt-get install -y python3 python3-pip && \
-     apt-get clean all && \
-     pip3 install flask
-
- ADD hello.py /apps/hello.py
-
- EXPOSE 5000
-
- CMD ["python3", "/apps/hello.py"]
- ```
-
-
- ## 개선하기
-
- ```Dockerfile
- FROM ubuntu:16.04
- MAINTAINER byjeon <byjeon@miracom.co.kr>
- RUN apt-get update && \
-     apt-get install -y python3 python3-pip && \    
-     apt-get clean all
- RUN pip3 install flask
-
- ADD hello.py /apps/hello.py
-
- EXPOSE 5000 9200
-
- CMD ["python3", "/apps/hello.py"]
- ```
-
- ## List
-  1. FROM
-  2. MAINTAINER
-  3. RUN
-  4. ENTRYPOINT
-  5. CMD
-  6. ENV
-  7.

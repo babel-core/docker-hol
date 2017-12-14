@@ -1,5 +1,5 @@
-FROM ubuntu:mecap-es
-MAINTAINER byjeon <byjeon@miracom.co.kr>
+FROM elastic:mecap
+MAINTAINER byjeon <mysummit@gmail.com>
 
 # add user
 RUN useradd -ms /bin/bash babel

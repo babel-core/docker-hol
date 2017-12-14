@@ -1,8 +1,8 @@
-FROM myubuntu:16.04
-MAINTAINER byjeon <byjeon@miracom.co.kr>
+FROM ubuntu:base
+MAINTAINER byjeon <mysummit@gmail.com>
 
-# Install Python3
+# Install python3, python3-pip
 RUN apt-get install -y python3 python3-pip
 
-# Running python3 REPL
+# Running python3 repl
 CMD ["python3"]

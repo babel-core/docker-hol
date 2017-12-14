@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER byjeon <byjeon@miracom.co.kr>
+MAINTAINER byjeon <mysummit@gmail.com>
 
 # Essentials
 RUN apt-get update

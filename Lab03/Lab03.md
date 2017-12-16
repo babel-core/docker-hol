@@ -30,6 +30,8 @@
 2. **(선택) 이미지 내부로 전달 예정인 파일** 호스트에 가진 파일을 생성될 이미지에 전달하고자하는 경우에 사용된다.
 3. **(선택) .dockerignore 파일** 호스트의 대상 파일 중 전달되지 않아야 하는 대상을 선정하는 경우에 사용한다. 이미지에 보안에 방해요소들을 제거하여 운영하는 경우 유용할 것이다.
 
+### 기본 이미지 생성하기
+
 이제 본격적인 실습에 들어가보자.
 다음은 [busybox](https;//github.com/)라는 이미지를 생성하는 것을 Dockerfile 이용하여 `genesis`라는 이미지를 생성할 것이다.
 
@@ -41,8 +43,7 @@ $ tree
 ├── Dockerfile
 └── busybox.tar.xz
 ```
-`busybox.tar.xz`는 우리가 이미지 생성시 추가하여 이미지를 구성에 활용할 것이다 Dockerfile의 작성할 것이다.
-Dockerfile의 작성 내용은 다음과 같다.
+`busybox.tar.xz`는 우리가 이미지 생성시 추가하여 이미지를 구성하는 데에 사용할 것이다 Dockerfile에 파일이 이미지의 구성에 활용할 수 있도록 정의할 것이다. Dockerfile의 작성 내용은 다음과 같다.
 
 ```Dockerfile
 FROM scratch
@@ -60,7 +61,6 @@ Dockerfile은 일반적으로 **명령어**와 **정보**로 구성된다.
 - `MAINTAINER`는 Dockerfile를 구성하는 조직이나 인물을 기록한다.
 - `ADD`는 호스트에 존재하는 파일을 이미지의 특정폴더에 추가한다.
 - `CMD`는 컨테이너가 실행되는 경우 실행되는 커맨드를 정의한다.
-
 
 `docker build` 커맨드의 사용방법은 다음과 같다.
 
@@ -129,6 +129,147 @@ REPOSITORY     TAG       IMAGE ID         CREATED          SIZE
 genesis        latest    c5de1cf67f83     29 seconds ago   1.13 MB
 ```
 
+### busybox 
 
-나만의 이미지를 생성하여  관리 영역으로 서비스를 운영하다
-컨테이너 기반으로 서비스를 운영하게 되면 유연하게 조정이 가능하다. 서비스의 부하량를 예측하여 최적화된 서비스를 확장하거나 축소하는 것이 가장 대표적이다. 또한 이미지를 이용하여 빠르게 컨테이너를 어떻게 구성하느냐에 따라서 빠르게 배포를  연계되는 서비스가 변화되거나 특정 될 수 있다. 따라서 컨테이너 기반으로 서비스를 운영한다면,  이에 맞게 컨테이너의 환경도 변화해야하고, 이미지의  가져야할 필요가 생기게 된다. 하지만 하고 하기 마련이다. 이런 경우 내가 원하는 docker 이미지를 생성하는 방법은 여러가지가 있다. docker
+이번 절에서는 Docker의 공식 이미지인 busybox와 유사한 이미지를 만들 것이다. 
+여기서는 기본 이미지에 `ENV`과 `WORKDIR` 명령어의 사용사례를 알아본다.
+폴더의 구성은 다음과 같다.
+
+```Bash
+$ tree
+.
+|____Dockerfile
+```
+
+이미지 생성할 폴더에는 Dockerfile만을 이용하여 빌드를 진행할 것이다. Dockerfile의 내용은 다음과 같다.   
+
+```Dockerfile
+FROM genesis
+MAINTAINER byjeon <mysummit@gmail.com>
+
+# set env
+ENV HOME_DIR=/home
+WORKDIR $HOME_DIR
+
+CMD ["/bin/sh"]
+```
+
+이 Dockerfile은 방금 전에 우리가 만든 `genesis`이미지를 활용할 것이다. 그런데 우리는 시작하는 동시에 HOME 디렉토리에서 시작하고자 한다. 그리고 Docker 내부에서도 홈 디렉토리의 정보를 환경변수로 정의하여 사용한다고 가정하자. 그렇다면 우리는 `ENV`명령어를 이용하여 HOME_DIR를 환경변수를 정의하고, `WORKDIR` 명령어를 이용하여 이미지가 실행되는 초기 디렉토리 위치를 정의할 수 있다. 환경변수와 시작 디렉토리를 정의하는 방법을 위의 Dockerfile에서 볼 수 있다.  
+
+이제 원하는 설정을 모두 마쳤으니, `busybox:custom`이라는 이미지로 `build`를 진행하자.
+`busybox`은 이미지 이름이고, `custom`은 태그 이름이다.  
+
+```Bash
+$ docker build -t busybox:custom .
+(...)
+```
+
+여기서 주목할 점은 busybox:`custom`이라고 이미지를 생성할 때, 이미지의 태그를 정의했다는 것이다.
+이제 이미지를 실행해보자. 
+
+```Bash
+$ docker run -it --rm busybox:custom 
+/home # cd /
+/ # echo $HOME_DIR
+/home
+```
+
+위의 쉘이 수행되는 것을 보면, Dockerfile에서 정의된 `ENV`가 컨테이너에서도 활용할 수 있다는 것을 알 수 있다. 
+
+```Bash
+$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+busybox             custom              a4c850b3cb5a        29 minutes ago      1.13MB
+```
+
+### Flask 애플리케이션 이미지 생성하기
+
+우리는 이제 Flask 애플리케이션을 Docker로 구축하고자한다. 우분투 16.04를 기반으로 서비스를 구축하려고 한다.
+이미지를 구성하는 데에 필요한 구성요소는 다음과 같다. 
+여기서 `EXPOSE`명령어를 알아본다. 
+
+```Bash
+.
+|____Dockerfile
+|____hello.py
+```
+
+우리의 Flask 서비스는 `hello.py`에 모두 구성되어 있다.  
+서비스 환경을 구축하기 위한 Dockerfile은 다음과 같다. 
+
+```Dockerfile
+FROM ubuntu:16.04
+MAINTAINER byjeon <mysummit@gmail.com>
+
+# Install Packages
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean && \
+    pip3 install flask
+
+# Add a Service File
+ADD hello.py /apps/hello.py
+
+# Expose Network Port
+EXPOSE 5000
+
+# Running the service
+CMD ["python3", "/apps/hello.py"]
+```
+
+서비스의 기반 환경이 우분투 16.04이기 때문에, 우리는 우분투 이미지를 기반으로 시작한다.
+그리고 우투분에는 python3는 설치되어 있지 않기 때문에 `python3`과 파이썬 패키지 설치를 위하여 `pip`를 설치한다. 그리고 pip를 이용하여 `Flask`를 설치한다. 
+
+> 여기서 주목할 점은 `&&` 를 이용하여 4개의 커맨드를 병렬적으로 수행했다는 점이다. 만약 커맨드를 개별적으로 수행하게 되면, build 과정에서 Step이 분리되며, 이미지를 구성하는 Layer가 분리된다. 개인적인 생각으로는 Layer를 단순화 시키는 것이 실력이지 않을까 생각한다.  
+
+여기서 알아보고자 하는 것은 `EXPOSE` 명령어이다. 이 명령어는 컨테이너의 포트를 호스트 컴퓨터에 노출한다고 명시적으로 정의하는 것이다. 물론 정의한다고 실행할 때, 호스트와 연동되는 것은 아니며, 정의를 안한다고 호스트와 연결하는 것이 가능하다. `docker run` 커맨드를 수행할 때, `-P`를 이용하여 쉽게 노출시킬 수 있고, Dockerfile을 구성원들이 해석하는 데에 도움이 될 수 있다고 생각한다. 
+
+자, 그럼 이제 이미지를 빌드해보자.
+
+```Bash
+$ docker build -t ubuntu:flask0to1 .
+(...)
+```
+
+패키지를 설치하는 데에 상당히 많은 시간이 걸려 빌드가 완료되었다.
+이제 이미지를 다양한 방식으로 실행하여 어떻게 컨테이너가 생성되었는 지 확인해보자.
+
+#### 퍼블리쉬 없이 컨테이너 실행하기
+
+```Bash
+$ docker run -d --rm --name flask1 ubuntu:flask0to1
+bd751dfb9f6769b825109760d7965a14fd366605142b1685f2814f55a8b34f08
+```
+
+#### `-P`로 퍼블리쉬하여 컨테이너 실행하기
+
+```Bash
+$ docker run -d --rm --name flask2 -P ubuntu:flask0to1
+f1f7b43a73ef3bb57a0cb3206abb3ed0dfb209f7ad2e84292c119f204ca08d36
+```
+
+#### `-p`로 퍼블리쉬하여 컨네이너 실행하기 
+
+```Bash
+$ docker run -d --rm --name flask3 -p 5000:5000 ubuntu:flask0to1
+f1f7b43a73ef3bb57a0cb3206abb3ed0dfb209f7ad2e84292c119f204ca08d36
+```
+
+컨테이너를 실행되는 상태를 확인하면 다음과 같다. 
+
+```Bash
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                     NAMES
+a535029d73ec        ubuntu:flask0to1    "python3 /apps/hel..."   2 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp    flask3
+bd751dfb9f67        ubuntu:flask0to1    "python3 /apps/hel..."   4 minutes ago       Up 4 minutes        5000/tcp                  flask2
+f1f7b43a73ef        ubuntu:flask0to1    "python3 /apps/hel..."   7 minutes ago       Up 7 minutes        0.0.0.0:32772->5000/tcp   flask1
+a535029d73ec        ubuntu:flask0to1    "python3 /apps/hel..."   2 seconds ago       Up 2 seconds                                  flask0
+```
+
+- `flask1`는 퍼블리쉬 인자 없이 컨테이너를 실행한 것으로 호스트 포트가 연결되어 있지 않아 외부에서 서비스의 접근이 불가능하다. 
+- `flask2`는 `-P`인자를 이용하여 암묵적으로 호스트 포트와 명시된 포트를 연결한 것이다. 
+- `flask3`는 `-p`인자를 이용하여 명시적으로 호스트 포트와 컨테이너 포트를 연결한 것이다. 서비스 운영상에서 가장 권장되는 방식이다.
+- `flask0`는 Dockerfile에 EXPOSE가 없이 `flask1`과 같이 실행시킨 것이다. 그렇지만 `flask3`과 같은 방식으로 컨테이너를 실행하다면, 외부에서 서비스의 접근이 가능하다.
+
+
+## 마무리

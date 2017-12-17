@@ -534,6 +534,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 ### 7. Background 모드로 컨테이너 실행하기 (`--detach`, `-d`)
 
 * -d 옵션을 설정하는 경우
+
 ```Bash
 $ docker run --rm -d --name es01 elsaticsearch
 ...
@@ -541,6 +542,7 @@ $ _
 ```
 
 * -d 옵션을 설정하지 않은 경우
+
 ```Bash
 $ docker run --rm --name es01 elsaticsearch
 ...
@@ -602,7 +604,7 @@ $ docker exec -it b01 sh
 bin   dev   etc   home  proc  root  sys   tmp   usr   var
 ```
 
-### 호스트와 컨테이너의 파일시스템 연동하기 (`--volumes`,`-v`)
+### 호스트와 컨테이너의 파일시스템 연동하기 (`--volume`,`-v`)
 
 ```Bash
 docker run --rm -it --name p09 -v /home/dbuser/materials:/home python /bin/bash
@@ -617,11 +619,11 @@ root@0b797705326e:/home# pwd
 /home
 ```
 
-### 컨테이너에 환경변수 설정하기 (`--workdir`, `-w`)
+### 컨테이너에 환경변수 설정하기 (`--env`, `-e`)
 
 ```Bash
-docker run --rm -it --name p09 -v /home/dbuser/materials:/home -w /home python /bin/bash
-root@0b797705326e:/home# _
+docker run -d -e MYSQL_ROOT_PASSWORD=root --name mysqldb mysql
+865e8b9dfc1d5e3566f4f6909376585f4b24783cf4a4a039e1590325094dba7a
 ```
 
 ### 마치며

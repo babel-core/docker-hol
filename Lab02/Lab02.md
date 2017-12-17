@@ -21,7 +21,7 @@ Options:
       --config string      Location of client config files (default
                            "C:\Users\titicaca\.docker")
       --help               Print usage
-  -_, --**<full-argument>**  **<Desciption>**
+  -_, --**full-argument**  **Desciption**
   -v, --version            Print version information and quit
 
 Management Commands:

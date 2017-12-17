@@ -473,7 +473,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS                     PORT
 
 일반적으로 OS에서 프로세스를 실행하는 방식은 Foreground 모드와 Background 모드로 나눌 수 있다. 도커 컨테이너도 2가지 모드를 실행할 수 있는데, 다음 두 절에서 각각의 모드로 실행하는 것을 살펴본다.
 
-### 6. Foreground 모드로 컨테이너 실행하기 (`--interactive --tty`, `-it`, `-ti`, `-i -t`, `-t -i`)
+### 6. Foreground 모드로 컨테이너 실행하기 (`-it`, `-ti`, `-i -t`, `-t -i`)
 
 Foreground 모드로 컨테이너 실행하기 위해서는 인자 `--interactive --tty`를 모두 사용하여 실행한다. 그런데 너무 길어서 대부분의 경우에는 약어로된 인자를 사용하게 된다. 그리고 여기서 유의할 점은 foreground로 정상적으로 동작하기 위해서는 두 인자를 모두 사용하는 것이 필요하다.
 
@@ -531,7 +531,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 177ac385ab9f  busybox  "sh"      13 seconds ago  Up 12 seconds          b01
 ```
 
-### 7. Background 모드로 컨테이너 실행하기 (`--detach, -d`)
+### 7. Background 모드로 컨테이너 실행하기 (`--detach`, `-d`)
 
 * -d 옵션을 설정하는 경우
 ```Bash
@@ -553,10 +553,6 @@ $ docker run --rm --name es01 elsaticsearch
 $ docker run -d --rm --name es01 -p 9200:9200 elasticsearch
 ...
 ```
-
-
-
-
 
 ### `docker start`
 이 부분을 살펴보기 위해서 `docker start`를 커맨드를 확인하자.
@@ -606,19 +602,7 @@ $ docker exec -it b01 sh
 bin   dev   etc   home  proc  root  sys   tmp   usr   var
 ```
 
-#### `-d`
-
-```Bash
-$ docker run -d --name b04 busybox sh
-01c17c134779813af882c520851721e9fd8584e8c2b1c4834633b9e9df074559
-```
-
-```Bash
-$ pwd
-/home/user
-```
-
-### 호스트와 컨테이너의 파일시스템 연동하기 (`-volumes`,`-v`)
+### 호스트와 컨테이너의 파일시스템 연동하기 (`--volumes`,`-v`)
 
 ```Bash
 docker run --rm -it --name p09 -v /home/dbuser/materials:/home python /bin/bash

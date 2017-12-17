@@ -335,12 +335,9 @@ volume | -v, --volume list                |    Bind mount a volume
 port | -p, --publish list       |           Publish a container's port(s) to the host
 workdir | -w, --workdir list       |           Working directory inside the container
 
-
-### `docker run` 기본실습 I
-
 여기서는 `busybox`라는 Docker에서 제공하는 공식 이미지를 이용하여 기본 동작을 이해할 것이다.
 
-1. 터미널에 `docker images` 입력
+### 1. 터미널에 `docker images` 입력
 `busybox`를 실행하기에 앞서 내가 보유한 이미지를 확인하기 위한 선행학습을 시작할 것이다. 현재 내가 보유하고 있는 이미지를 살펴보기 위해서는 터미널에 `docker images`를 입력하면 된다.
 
 ```Bash
@@ -352,11 +349,11 @@ elasticsearch    5.2.0     7a047c21aa48   2 weeks ago   581MB
 
 현재 내가 보유하고 있는 이미지는 elasticsearch라는 이미지가 2개 있다는 것을 알 수 있다. 동일한 이름이 여러 개가 있을 수 있을까? 동일한 이름은 얼마든지 있을 수 있다. 왜냐하면 Docker는 원래 IMAGE ID로 관리하고, IMAGE_NAME:TAG의 형태로 저장소에서 유일하게 가질 수 있다. 여기서 또 하나 특이한 점은 위의 두 이미지는 동일한 IMAGE ID를 가지고 있다. 이름은 다르지만 동일한 이미지라는 것을 유추해 볼 수 있다.
 
-2. 터미널에 `docker run busybox` 입력
+### 2. 터미널에 `docker run busybox` 입력
 
 이제 우리는 busybox를 실행할 것이다. 이미지가 저장소에 존재하는 경우와 존재하지 않는 경우가 다르다. 경우에 따라 동작하는 것을 살펴보자.
 
-* `busybox`이미지가 로컬 저장소에 없는 경우
+#### `busybox`이미지가 로컬 저장소에 없는 경우
 
 ```Bash
 $ docker run busybox
@@ -368,7 +365,7 @@ Status: Downloaded newer image for busybox:latest
 ```
 `busybox` 이미지가 저장소에 존재하지 않으면, 이미지를 내려받아 실행한다. 이미지를 내려받는 것을 `pull`이고, 이미지를 실행하는 것은 `run`이다. 다시 말해 이미지가 존재하지 않으면, pull을 실행한다음, run이 실행되는 것이다.
 
-* `busybox` 이미지가 로컬 저장소에 있는 경우
+#### `busybox` 이미지가 로컬 저장소에 있는 경우
 
 ```Bash
 $ docker run busybox
@@ -377,7 +374,7 @@ $ docker run busybox
 다시 한번 실행해보면, 이런 기본적인 명령어로는 아무런 동작도 하지 않는 것처럼 보인다. 실제 동작이 하지 않은 것일까? 실제 동작은 하였지만 눈여 띄지 않는다. 그 이유는 컨테이너에 아무런 인자가 존재하지 않는다면, 컨테이너 시작과 동시에 종료되도록 구성되어 있기 때문이다.
 이런 경우 컨테이너가 동작하였는지 확인하는 과정이 필요하다.
 
-4. 컨테이너 동작여부 확인하기
+### 3. 컨테이너 동작여부 확인하기
 
 컨테이너가 동작여부를 파악하기 위하여 `docker ps`를 이용한다. 컨테이너가 우리가 의도한 데로 동작하고 있는지를 판단하기 위하여 `docker ps`를 많이 사용하게 될 것이다. 우리는 docker ps와 친해져야 한다.
 
@@ -424,7 +421,7 @@ $ docker ps -a
 CONTAINER ID  IMAGE     COMMAND   CREATED          STATUS                     PORTS   NAMES
 ```
 
-5. docker run에 인자 `--rm` 추가하기
+### 4. docker run에 인자 `--rm` 추가하기
 
 앞에서 docker ps -a를 수행하여도 남지 않는 경우가 존재한다고 언급하였다. 이 경우가 컨테이너를 수행하는 경우에 인자 `--rm`를 사용하는 경우이다. 이 인자는 컨테이너가 종료되면 자동적으로 컨테이너를 제거하기 때문이다. 실습으로 들어가보자.
 
@@ -449,7 +446,7 @@ CONTAINER ID  IMAGE     COMMAND   CREATED          STATUS                     PO
 만약 특정 시간에 트래픽이 몰리는 서비스에서 데이터를 외부에 저장하거나, 데이터를 전달하는 서비스의 경우에 스케일링이 요구된다고 가정하자.  이런 사례에서 Docker로 구성되어 있다면, 이 인자를 활용하면 유용할 것이다. 트래픽이 증가되기 이전에 이미 생성된 이미지를 준비하고, 트래픽이 증가하는 시점에 맞춰 컨테이너를 동작시킨다. 트래픽이 점차 감소하면 컨테이너를 종료한다. 컨테이너의 이력이 남아 있을 이유도 없다. 물론 로그도 외부에 존재해야 한다.
 결론적으로 만약 컨테이너가 동작을 수행하고 종료되면, 컨테이너를 유지가 필요없는 서비스에는 `--rm` 옵션을 사용하자.
 
-6. 컨테이너 이름 지정하기(`--name`)
+### 5. 컨테이너 이름 지정하기(`--name`)
 
 위에서 우리는 컨테이너를 구성할 때, 이름을 명시하지 않아도 Docker 엔진에서 명명한 랜덤한 이름으로 컨테이너의 이름을 지정하고 동작한다.
 
@@ -464,8 +461,6 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS                     PORT
 
 우리는 인자 `--name`를 이용하여 명시적으로 컨테이너의 이름을 정의한다.
 
-#### 이름을 명시하는 방법
-
 ```Bash
 $ docker run --name mybusybox busybox
 ```
@@ -476,28 +471,10 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS                     PORT
 177ac385ab9f  busybox  "sh"      13 seconds ago  Exited (0) 12 seconds ago         mybusybox
 ```
 
-#### 이름을 명시하지 않는 방법
-
-```Bash
-$ docker run busybox
-```
-
-```Bash
-$ docker ps -a
-CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS                     PORTS  NAMES
-177ac385ab9f  busybox  "sh"      13 seconds ago  Exited (0) 12 seconds ago         hopeful_dijkstra
-```
-
-#### 모든 컨테이너 삭제하기 (복습)
-
-```Bash
-$ docker rm `docker ps -aq`
-```
+### 6. 컨테이너와 상호작용 하기 (`-i`, `-t`, `-d`)
 
 
-### `docker run` 기본실습 IV (`-i`, `-t`, `-d`)
-
-#### `-i`를 사용
+#### `-i`만 사용
 
 `-t` 옵션이 설정되지 않아 터미널 없이 컨테이너가 생성되어 키보드 입력 불가
 
@@ -512,7 +489,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 177ac385ab9f  busybox  "sh"      13 seconds ago  Up 12 seconds          b01
 ```
 
-#### `-t`를 사용
+#### `-t`만 사용
 
 interactive 옵션이 설정되지 않아 터미널은 열렸지만, 입력 불가
 
@@ -527,7 +504,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 177ac385ab9f  busybox  "sh"      13 seconds ago  Up 12 seconds          b01
 ```
 
-#### `-it` 또는 `-t -i` 또는 `-ti`를 사용
+#### `-it` 또는 `-t -i` 또는 `-ti`를 동시에 사용
 
 ```Bash
 $ docker run --rm -t --name b01 busybox

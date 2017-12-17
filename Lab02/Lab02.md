@@ -1,13 +1,14 @@
-# Deep Dive Docker CLI(Command Line Interfaces) 
-Docker를 사용하다 느낀 점은 튜토리얼 수준의 명령어의 수준을 벗어나지 못하고, 실제 업무에서 머릿속으로 생각한 ~~DB와 웹서버와 같이 간단한~~ 조금 복잡한 `아키텍처를 Docker로 옮기려고 시도`하면 실패한다는 것이다. 이유는 `커맨드를 조금만 달리 조합하더라도 컨테이너의 동작방식이 많이 달라`지며, 서비스는 동작하지 않기 때문이다. 
+# 2장 Docker CLI
 
-그래서 내린 결론은 `CLI를 다루는 기본기가 탄탄`해야 한다. 내가 입력하는 커맨드가 컨테이너를 어떻게 동작시킬 것인지 머릿속으로 그릴 정도가 되어야 안심하고 서비스에 적용할 수준이 된다고 생각한다. 다시 말해 `내가 Docker CLI을 통하여 터미널에 입력하는 것이 정확하게 어떠한 의도인지 명확하게 파악하는 것이 중요`하다. 이런 탄탄한 기반 위에 `유연한 클러스터 환경을 구성`이 가능할 것이고, `컨테이너 기반의 마이크로 서비스 구축`도 가능할 것이다. 
+현재까지 Docker를 실무에 사용하지 않는 나는 일관성, 유연함, 에코시스템 등에서 Docker의 매력에 푹빠졌다. 1년 가까이 Docker를 이용할 기회가 있을 떄마다 로컬에 패키지를 설치하는 대신 과감하게(?) 인터넷에 공개된 Docker 이미지를 적용하였다. 하지만 `어째 내가 의도한 것과 다르게` 동작하는 상황이 자주 발생하였다. 나에게는 일관성이라는 측면만킁은 먼 나라 이야기였다. 하지만 주변에서 Docker를 접한 많은 사람들이 나와 비슷한 현상으로 인하여 Docker를 거부하는 현상이 있는 것을 알게되었다. 실제 업무에 `일관성` 때문에 적용한다는 Docker는 누군가에게는 외면하는 것일까?   
 
-여기에서는 `Docker CLI가 가지고 있는 구성`을 간략히 살펴보고, 한 로컬에서 `Docker 이미지와 컨테이너 조작 방법을 정리`한다.
+이런 반복 경험 속에서 최근에 내가 무지했다는 것을 깨달았다. 나는 `Docker CLI`의 기본적인 사용법도 명확하게 파악하지 못하고 있다는 것을... 터미널에 수없이 Docker 커맨드를 입력하였지만, 내가 입력한 커맨드가 어떠한 컨테이너를 생성하는지? 내가 입력한 인자가 어떠한 의도를 가지는지? 잘 모른채 동작시키고 있었던 것이다. 그래서 남들이 만들어놓은 이미지와 남들이 만들어준 커맨드를 이용하면 문제없이 동작하지만, 내가 머릿 속으로 그린 관점을 그대로 옮기려고 하면, 운이 좋으면 잘 동작하고, 어딘가 다르게 동작하는 경우도 있었을 것이다.
+
+여기서는 Docker 컨테이너 1개를 잘 동작시키는 `Docker CLI`에 대해 실습해 볼 것이다.
 
 ## Docker CLI 구성
 
-~~다들 고수인 심증은 있지만 물증이 없으니~~ Docker CLI을 잘 모른다는 가정하에, 아무 생각하지 않고 터미널을 열고 `docker` 커맨드를 입력한다.  
+Docker CLI을 잘 모른다는 가정하에, 아무 생각하지 않고 터미널을 열고 `docker` 커맨드를 입력한다.  
 
 ```Bash
 $ docker # docker --help와 동일한 결과
@@ -34,15 +35,15 @@ Commands:
 Run 'docker COMMAND --help' for more information on a command.
 ```
 
-터미널에 `docker`만을 입력하면, 위의 그림에서 보는 것과 같이 `Options`, `Management Commands`, `Commands`라는 3가지 커맨드 카테고리만 나타날 뿐 `docker` 커맨드만으로는 아무 동작도 수행할 수 없다. 그래서 docker는 `docker --help`에 해당하는 명령이 출력되고 수행을 종료한다. 
+터미널에 `docker`만을 입력하면, 위의 그림에서 보는 것과 같이 `Options`, `Management Commands`, `Commands`라는 3가지 커맨드 카테고리만 나타날 뿐 `docker` 커맨드만으로는 아무 동작도 수행할 수 없다. 그래서 docker는 `docker --help`에 해당하는 명령이 출력되고 수행을 종료한다.
 
- `docker`의 실제 수행은 `Options` 카테고리에 있는 tag들을 이용하여 docker 엔진의 설정 정보를 변경할 수 있으며, `Management Commands`와 `Commands` 카테고리에 나열된 보조 커맨드(sub-command)를 수행해야 한다. 
+ `docker`의 실제 수행은 `Options` 카테고리에 있는 tag들을 이용하여 docker 엔진의 설정 정보를 변경할 수 있으며, `Management Commands`와 `Commands` 카테고리에 나열된 보조 커맨드(sub-command)를 수행해야 한다.
 
 docker 커맨드에 구성되어 있는 Tag들과 보조 커맨드에 대하여 간략히 살펴보도록 한다.
 
 ### Options
 
-Docker 엔진의 운영모드, 로깅수준 설정, TLS(Transport Layer Secure) 설정 등을 지원한다. 
+Docker 엔진의 운영모드, 로깅수준 설정, TLS(Transport Layer Secure) 설정 등을 지원한다.
 
 ```Bash
 Options:
@@ -181,7 +182,7 @@ Commands:
 
 ```Bash
 $ docker run --help                                                           
-                                                                              
+
 Usage:  docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
 
 Run a command in a new container
@@ -330,7 +331,7 @@ Options:
   -w, --workdir string                 Working directory inside the container
 ```
 지금 우리는 이것을 알 수 없다. 기본 과정에서는 내가 지금까지 한번이라도 본 적있는 Tag들만 추려서 기술하고,
-진행해나가면서 필요한 부분들을 개별적으로 파악하는 방식으로 해보자. 
+진행해나가면서 필요한 부분들을 개별적으로 파악하는 방식으로 해보자.
 
 Name | Command Options | Description
 -------- | ------------------------------ | ---------------------------------
@@ -339,14 +340,14 @@ env |  -e, --env list           |            Set environment variables
 interactive | -i, --interactive           |         Keep STDIN open even if not attached   
 link |    --link list              |        Add link to another container          
 name |    --name string             |       Assign a name to the container         
-rm |    --rm                       |      Automatically remove the container when it exits 
+rm |    --rm                       |      Automatically remove the container when it exits
 tty | -t, --tty                       |     Allocate a pseudo-TTY                  
 volume | -v, --volume list                |    Bind mount a volume          
 port | -p, --publish list       |           Publish a container's port(s) to the host
 workdir | -w, --workdir list       |           Working directory inside the container
-                                       
 
-2. 터미널에 `docker images` 입력 
+
+2. 터미널에 `docker images` 입력
 `busybox`를 실행하기에 앞서 `docker images`의 결과를 살펴보면, 이미지 로컬 저장소에 `busybox` 이미지가 없다는 것을 확인한다.
 
 ```Bash
@@ -378,13 +379,13 @@ $ docker run busybox
 ~~뭐가 방금 지나갔냐? 순식간에 일어난 일이라!~~
 
 4. `docker ps` 커맨드로 실행 확인
-이런 경우, `docker ps`를 이용한다. ~~현재로서(?) 적절한 모니터링 방법이 없는 우리는 `docker ps`랑 친해져야 한다. 그런 다음 슬프게도 살아 있는지 육안검사를 수행해야한다.~~ 
+이런 경우, `docker ps`를 이용한다. ~~현재로서(?) 적절한 모니터링 방법이 없는 우리는 `docker ps`랑 친해져야 한다. 그런 다음 슬프게도 살아 있는지 육안검사를 수행해야한다.~~
 
 ```Bash
 $ docker ps
 CONTAINER ID  IMAGE     COMMAND   CREATED          STATUS                     PORTS   NAMES
 ```
-"어랏~ 내가 커맨드를 잘못 입력했나? 실행이 안된 것 같은데." 라고 생각하시지만, 아래의 명령어를 입력하면, 실행이 되자마자 바로 종료되었다는 것을 알 수 있다. `docker ps`은 현재 구동 중인 컨테이너가 표시 대상이기 때문에 종료된 컨테이너는 표시되지 않는 것이다. 
+"어랏~ 내가 커맨드를 잘못 입력했나? 실행이 안된 것 같은데." 라고 생각하시지만, 아래의 명령어를 입력하면, 실행이 되자마자 바로 종료되었다는 것을 알 수 있다. `docker ps`은 현재 구동 중인 컨테이너가 표시 대상이기 때문에 종료된 컨테이너는 표시되지 않는 것이다.
 
 만약 종료된 컨테이너의 확인이 필요하다면, 터미널에 `docker ps -a`라고 입력해야 한다.
 
@@ -398,7 +399,7 @@ CONTAINER ID  IMAGE     COMMAND   CREATED          STATUS                     PO
 
 ### `docker run` 기본실습 II (`--rm`)
 
-```Bash 
+```Bash
 $ docker run --rm b01 busybox
 ```
 
@@ -413,15 +414,15 @@ CONTAINER ID  IMAGE     COMMAND   CREATED          STATUS                     PO
 ```
 
 내가 웹서비스를 운영하고 특정 시간에 트래픽이 갑자기 몰려드는 시간이 있어 미리 서비스를 위한 웹서버를 증설할 필요가 있다고 가정하자. 이 서버는 유연한 확장을 위해서 내부에 데이터를 저장하지 않는다. 로그도 외부 스토리지에 저장하고, 보여주는 데이터도 외부의 데이터베이스나 캐시를 이용한다. 이런 서비스를 Docker로 구성하는 경우 트래픽이 증가되는 시점에 미리 서비스를 구축하고, 트래픽이 감소하면 웹서버도 줄여나가야 한다. 이런 서비스라면, 웹서버에 대한 컨테이너가 없애는 즉시 컨테이너의 이력 또한 가지고 있을 필요가 없다.    
-그렇다면 여기서 추가적으로 짚고 넘어갈 부분이 있는데, 만약 컨테이너가 동작을 수행하고 종료되면, 컨테이너를 유지 되는 것을 원하지 않는다면, `--rm` 옵션을 사용하면 된다. 
+그렇다면 여기서 추가적으로 짚고 넘어갈 부분이 있는데, 만약 컨테이너가 동작을 수행하고 종료되면, 컨테이너를 유지 되는 것을 원하지 않는다면, `--rm` 옵션을 사용하면 된다.
 
 ### `docker run` 기본실습 III (`--name`)
 
-`--name`은 컨테이너의 이름을 명시적으로 정의한다. 이름을 명시하지 않아도  Docker 엔진에서 명명한 랜덤한 이름으로 컨테이너의 이름을 지정하고 동작한다. 
+`--name`은 컨테이너의 이름을 명시적으로 정의한다. 이름을 명시하지 않아도  Docker 엔진에서 명명한 랜덤한 이름으로 컨테이너의 이름을 지정하고 동작한다.
 
 #### 이름을 명시하는 방법
 
-```Bash 
+```Bash
 $ docker run --rm --name b02 busybox
 ```
 
@@ -433,7 +434,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS                     PORT
 
 #### 이름을 명시하지 않는 방법
 
-```Bash 
+```Bash
 $ docker run busybox
 ```
 
@@ -455,7 +456,7 @@ $ docker rm `docker ps -aq`
 
 `-t` 옵션이 설정되지 않아 터미널 없이 컨테이너가 생성되어 키보드 입력 불가
 
-```Bash 
+```Bash
 $ docker run --rm -i --name b01 busybox
 _
 ```
@@ -503,7 +504,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 177ac385ab9f  busybox  "sh"      13 seconds ago  Up 12 seconds          b01
 ```
 
-#### `docker start` 
+#### `docker start`
 이 부분을 살펴보기 위해서 `docker start`를 커맨드를 확인하자.
 
 ```Bash
@@ -523,7 +524,7 @@ Options:
   -i, --interactive             Attach container's STDIN
 ```
 
-#### `-p` 
+#### `-p`
 
 여기서 elasticsearch를 한번 사용해보자.
 
@@ -577,7 +578,7 @@ $ docker exec -it b01 sh
 bin   dev   etc   home  proc  root  sys   tmp   usr   var
 ```
 
-#### `-d` 
+#### `-d`
 
 ```Bash
 $ docker run -d --name b04 busybox sh
@@ -702,6 +703,3 @@ REPOSITORY          TAG                 IMAGE ID            CREATED             
 myubuntu            latest              bbdd2ef30da8        35 seconds ago      242 MB
 ...
 ```
-
-
-

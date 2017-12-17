@@ -17,11 +17,8 @@ Usage:  docker COMMAND
 
 A self-sufficient runtime for containers
 
-Options:
-      --config string      Location of client config files (default
-                           "C:\Users\titicaca\.docker")
-      --help               Print usage
-  -_, --**full-argument**  **Desciption**
+Options:      
+      --help               Print usage  
   -v, --version            Print version information and quit
 
 Management Commands:

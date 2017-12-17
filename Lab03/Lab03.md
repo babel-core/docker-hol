@@ -17,7 +17,28 @@
 
 `docker commit`과 `docker save`를 이용한 이미지 생성 방법은 이미지의 세부적인 내부 구조를 이해없이 이미지를 구성하거나 복원하는 방식이다. 따라서 이미지를 유연하게 운영하는 것에는 한계를 가질 것이다. 여기서는 `docker build`커맨드를 이용하여 Docker 이미지를 생성하는 방법에 대하여 넓고 얕게 알아본다. 서비스의 관리수준을 향상하기 위해서는 `docker build`를 기반으로 이미지를 관리하는 것이 좋을 것으로 생각한다.
 
-## docker build 커맨드 시작하기
+
+### `docker commit` 커맨드로 이미지 생성하기
+
+
+```Bash
+$ docker run -it --name p01 python /bin/bash
+# pip install flask
+...
+# exit
+
+$ docker commit p01 mypython:latest
+sha256:79444887fab40186dd6e4ac67a9da2b576821fb1d08fb629334cd145519100a0
+
+$ docker run -it --name mp01 mp python
+Python 3.6.3 (default, Nov  4 2017, 22:17:09)
+[GCC 4.9.2] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import flask
+>>> exit()
+```
+
+## docker build 커맨드로 나만의 이미지 생성하기
 
 여기서는 가장 기본이라 할 수 있는 scratch 이미지를 이용하여 간단한 이미지를 생성하는 실습을 진행한다.
 
@@ -129,9 +150,9 @@ REPOSITORY     TAG       IMAGE ID         CREATED          SIZE
 genesis        latest    c5de1cf67f83     29 seconds ago   1.13 MB
 ```
 
-### busybox 
+### busybox
 
-이번 절에서는 Docker의 공식 이미지인 busybox와 유사한 이미지를 만들 것이다. 
+이번 절에서는 Docker의 공식 이미지인 busybox와 유사한 이미지를 만들 것이다.
 여기서는 기본 이미지에 `ENV`과 `WORKDIR` 명령어의 사용사례를 알아본다.
 폴더의 구성은 다음과 같다.
 
@@ -165,16 +186,16 @@ $ docker build -t busybox:custom .
 ```
 
 여기서 주목할 점은 busybox:`custom`이라고 이미지를 생성할 때, 이미지의 태그를 정의했다는 것이다.
-이제 이미지를 실행해보자. 
+이제 이미지를 실행해보자.
 
 ```Bash
-$ docker run -it --rm busybox:custom 
+$ docker run -it --rm busybox:custom
 /home # cd /
 / # echo $HOME_DIR
 /home
 ```
 
-위의 쉘이 수행되는 것을 보면, Dockerfile에서 정의된 `ENV`가 컨테이너에서도 활용할 수 있다는 것을 알 수 있다. 
+위의 쉘이 수행되는 것을 보면, Dockerfile에서 정의된 `ENV`가 컨테이너에서도 활용할 수 있다는 것을 알 수 있다.
 
 ```Bash
 $ docker images
@@ -185,8 +206,8 @@ busybox             custom              a4c850b3cb5a        29 minutes ago      
 ### Flask 애플리케이션 이미지 생성하기
 
 우리는 이제 Flask 애플리케이션을 Docker로 구축하고자한다. 우분투 16.04를 기반으로 서비스를 구축하려고 한다.
-이미지를 구성하는 데에 필요한 구성요소는 다음과 같다. 
-여기서 `EXPOSE`명령어를 알아본다. 
+이미지를 구성하는 데에 필요한 구성요소는 다음과 같다.
+여기서 `EXPOSE`명령어를 알아본다.
 
 ```Bash
 .
@@ -195,7 +216,7 @@ busybox             custom              a4c850b3cb5a        29 minutes ago      
 ```
 
 우리의 Flask 서비스는 `hello.py`에 모두 구성되어 있다.  
-서비스 환경을 구축하기 위한 Dockerfile은 다음과 같다. 
+서비스 환경을 구축하기 위한 Dockerfile은 다음과 같다.
 
 ```Dockerfile
 FROM ubuntu:16.04
@@ -218,11 +239,11 @@ CMD ["python3", "/apps/hello.py"]
 ```
 
 서비스의 기반 환경이 우분투 16.04이기 때문에, 우리는 우분투 이미지를 기반으로 시작한다.
-그리고 우투분에는 python3는 설치되어 있지 않기 때문에 `python3`과 파이썬 패키지 설치를 위하여 `pip`를 설치한다. 그리고 pip를 이용하여 `Flask`를 설치한다. 
+그리고 우투분에는 python3는 설치되어 있지 않기 때문에 `python3`과 파이썬 패키지 설치를 위하여 `pip`를 설치한다. 그리고 pip를 이용하여 `Flask`를 설치한다.
 
 > 여기서 주목할 점은 `&&` 를 이용하여 4개의 커맨드를 병렬적으로 수행했다는 점이다. 만약 커맨드를 개별적으로 수행하게 되면, build 과정에서 Step이 분리되며, 이미지를 구성하는 Layer가 분리된다. 개인적인 생각으로는 Layer를 단순화 시키는 것이 실력이지 않을까 생각한다.  
 
-여기서 알아보고자 하는 것은 `EXPOSE` 명령어이다. 이 명령어는 컨테이너의 포트를 호스트 컴퓨터에 노출한다고 명시적으로 정의하는 것이다. 물론 정의한다고 실행할 때, 호스트와 연동되는 것은 아니며, 정의를 안한다고 호스트와 연결하는 것이 가능하다. `docker run` 커맨드를 수행할 때, `-P`를 이용하여 쉽게 노출시킬 수 있고, Dockerfile을 구성원들이 해석하는 데에 도움이 될 수 있다고 생각한다. 
+여기서 알아보고자 하는 것은 `EXPOSE` 명령어이다. 이 명령어는 컨테이너의 포트를 호스트 컴퓨터에 노출한다고 명시적으로 정의하는 것이다. 물론 정의한다고 실행할 때, 호스트와 연동되는 것은 아니며, 정의를 안한다고 호스트와 연결하는 것이 가능하다. `docker run` 커맨드를 수행할 때, `-P`를 이용하여 쉽게 노출시킬 수 있고, Dockerfile을 구성원들이 해석하는 데에 도움이 될 수 있다고 생각한다.
 
 자, 그럼 이제 이미지를 빌드해보자.
 
@@ -248,14 +269,14 @@ $ docker run -d --rm --name flask2 -P ubuntu:flask0to1
 f1f7b43a73ef3bb57a0cb3206abb3ed0dfb209f7ad2e84292c119f204ca08d36
 ```
 
-#### `-p`로 퍼블리쉬하여 컨네이너 실행하기 
+#### `-p`로 퍼블리쉬하여 컨네이너 실행하기
 
 ```Bash
 $ docker run -d --rm --name flask3 -p 5000:5000 ubuntu:flask0to1
 f1f7b43a73ef3bb57a0cb3206abb3ed0dfb209f7ad2e84292c119f204ca08d36
 ```
 
-컨테이너를 실행되는 상태를 확인하면 다음과 같다. 
+컨테이너를 실행되는 상태를 확인하면 다음과 같다.
 
 ```Bash
 $ docker ps
@@ -266,8 +287,8 @@ f1f7b43a73ef        ubuntu:flask0to1    "python3 /apps/hel..."   7 minutes ago  
 a535029d73ec        ubuntu:flask0to1    "python3 /apps/hel..."   2 seconds ago       Up 2 seconds                                  flask0
 ```
 
-- `flask1`는 퍼블리쉬 인자 없이 컨테이너를 실행한 것으로 호스트 포트가 연결되어 있지 않아 외부에서 서비스의 접근이 불가능하다. 
-- `flask2`는 `-P`인자를 이용하여 암묵적으로 호스트 포트와 명시된 포트를 연결한 것이다. 
+- `flask1`는 퍼블리쉬 인자 없이 컨테이너를 실행한 것으로 호스트 포트가 연결되어 있지 않아 외부에서 서비스의 접근이 불가능하다.
+- `flask2`는 `-P`인자를 이용하여 암묵적으로 호스트 포트와 명시된 포트를 연결한 것이다.
 - `flask3`는 `-p`인자를 이용하여 명시적으로 호스트 포트와 컨테이너 포트를 연결한 것이다. 서비스 운영상에서 가장 권장되는 방식이다.
 - `flask0`는 Dockerfile에 EXPOSE가 없이 `flask1`과 같이 실행시킨 것이다. 그렇지만 `flask3`과 같은 방식으로 컨테이너를 실행하다면, 외부에서 서비스의 접근이 가능하다.
 

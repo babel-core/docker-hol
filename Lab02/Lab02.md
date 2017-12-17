@@ -471,8 +471,21 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS                     PORT
 177ac385ab9f  busybox  "sh"      13 seconds ago  Exited (0) 12 seconds ago         mybusybox
 ```
 
-### 6. 컨테이너와 상호작용 하기 (`-i`, `-t`, `-d`)
+일반적으로 OS에서 프로세스를 실행하는 방식은 Foreground 모드와 Background 모드로 나눌 수 있다. 도커 컨테이너도 2가지 모드를 실행할 수 있는데, 다음 두 절에서 각각의 모드로 실행하는 것을 살펴본다.
 
+### 6. Foreground 모드로 컨테이너 실행하기 (`--interactive --tty`, `-it`, `-ti`, `-i -t`, `-t -i`)
+
+Foreground 모드로 컨테이너 실행하기 위해서는 인자 `--interactive --tty`를 모두 사용하여 실행한다. 그런데 너무 길어서 대부분의 경우에는 약어로된 인자를 사용하게 된다. 그리고 여기서 유의할 점은 foreground로 정상적으로 동작하기 위해서는 두 인자를 모두 사용하는 것이 필요하다.
+
+#### `-it` 또는 `-t -i` 또는 `-ti`를 동시에 사용
+
+```Bash
+$ docker run --rm -t --name b01 busybox
+/ # ls
+bin   dev   etc   home  proc  root  sys   tmp   usr   var
+```
+
+-i와 -t만을 사용하면 약간의 문제가 있다는 것을 알아보기 위하여 실습을 해본다.
 
 #### `-i`만 사용
 
@@ -504,14 +517,6 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 177ac385ab9f  busybox  "sh"      13 seconds ago  Up 12 seconds          b01
 ```
 
-#### `-it` 또는 `-t -i` 또는 `-ti`를 동시에 사용
-
-```Bash
-$ docker run --rm -t --name b01 busybox
-/ # ls
-bin   dev   etc   home  proc  root  sys   tmp   usr   var
-```
-
 
 ```Bash
 $ docker run --rm -t --name b01 busybox sh
@@ -526,29 +531,7 @@ CONTAINER ID  IMAGE    COMMAND   CREATED         STATUS          PORTS  NAMES
 177ac385ab9f  busybox  "sh"      13 seconds ago  Up 12 seconds          b01
 ```
 
-#### `docker start`
-이 부분을 살펴보기 위해서 `docker start`를 커맨드를 확인하자.
-
-```Bash
-$ docker start --help
-
-Usage:  docker start [OPTIONS] CONTAINER [CONTAINER...]
-
-Start one or more stopped containers
-
-Options:
-  -a, --attach                  Attach STDOUT/STDERR and forward signals
-      --checkpoint string       Restore from this checkpoint
-      --checkpoint-dir string   Use a custom checkpoint storage directory
-      --detach-keys string      Override the key sequence for detaching a
-                                container
-      --help                    Print usage
-  -i, --interactive             Attach container's STDIN
-```
-
-#### `-p`
-
-여기서 elasticsearch를 한번 사용해보자.
+### 7. Background 모드로 컨테이너 실행하기 (`--detach, -d`)
 
 * -d 옵션을 설정하는 경우
 ```Bash
@@ -573,7 +556,30 @@ $ docker run -d --rm --name es01 -p 9200:9200 elasticsearch
 
 
 
-#### `docker exec`
+
+
+### `docker start`
+이 부분을 살펴보기 위해서 `docker start`를 커맨드를 확인하자.
+
+```Bash
+$ docker start --help
+
+Usage:  docker start [OPTIONS] CONTAINER [CONTAINER...]
+
+Start one or more stopped containers
+
+Options:
+  -a, --attach                  Attach STDOUT/STDERR and forward signals
+      --checkpoint string       Restore from this checkpoint
+      --checkpoint-dir string   Use a custom checkpoint storage directory
+      --detach-keys string      Override the key sequence for detaching a
+                                container
+      --help                    Print usage
+  -i, --interactive             Attach container's STDIN
+```
+
+### `docker exec`
+
 ```Bash
 $ docker exec -it b01 sh
 Error response from daemon: Container 36bc12d4906331074010071c7d7ec46f4cb7b3f81875c89fdc289f1a8b981077 is not running
@@ -612,116 +618,37 @@ $ pwd
 /home/user
 ```
 
-#### `-v`
+### 호스트와 컨테이너의 파일시스템 연동하기 (`-volumes`,`-v`)
 
 ```Bash
 docker run --rm -it --name p09 -v /home/dbuser/materials:/home python /bin/bash
 root@0b797705326e:/# _
 ```
 
-#### `-w`
+### 컨테이너 기본 디렉토리 설정하기 (`--workdir`, `-w`)
+
+```Bash
+docker run --rm -it --name p09 -v /home/dbuser/materials:/home -w /home python /bin/bash
+root@0b797705326e:/home# pwd
+/home
+```
+
+### 컨테이너에 환경변수 설정하기 (`--workdir`, `-w`)
 
 ```Bash
 docker run --rm -it --name p09 -v /home/dbuser/materials:/home -w /home python /bin/bash
 root@0b797705326e:/home# _
 ```
 
-#### `docker run` Check List
+### 마치며
+
+`docker run`의 Check List
 - [x] detach (-d, --detach)
-- [ ] env (-e, --env list)
+- [x] env (-e, --env list)
 - [x] interactive (-i, --interactive)
-- [ ] link (--link list)
 - [x] name (--name string)
 - [x] rm (--rm)
 - [x] tty (-t, --tty)
 - [x] volume (-v, --volume list)
 - [x] port (-p, --publis list)
 - [x] workdir (-w, --work list)
-
-
-#### `docker commit`
-
-
-```Bash
-$ docker run -it --name p01 python /bin/bash
-# pip install flask
-...
-# exit
-
-$ docker commit p01 mypython:latest
-sha256:79444887fab40186dd6e4ac67a9da2b576821fb1d08fb629334cd145519100a0
-
-$ docker run -it --name mp01 mp python
-Python 3.6.3 (default, Nov  4 2017, 22:17:09)
-[GCC 4.9.2] on linux
-Type "help", "copyright", "credits" or "license" for more information.
->>> import flask
->>> exit()
-```
-
-#### `docker build`
-
-```bash
-$ vi Dockerfile
-```
-
-```vi
-[editor]
-FROM Ubuntu:14.04
-RUN apt-get update
-:wq
-```
-
-```Bash
-$ sudo docker build -t myunbuntu .
-Sending build context to Docker daemon 39.66 MB
-Step 1/2 : FROM ubuntu:14.04
-14.04: Pulling from library/ubuntu
-01a4f8387457: Pull complete
-c887940e680c: Pull complete
-5432573ac160: Pull complete
-027ee9a9665e: Pull complete
-5611db80430d: Pull complete
-Digest: sha256:7b3b72e6a388c24c0cc3e0d1aade3364c52f03e54bd5ab440f8fd93c69203733
-Status: Downloaded newer image for ubuntu:14.04
- ---> d6ed29ffda6b
-Step 2/2 : RUN apt-get update
- ---> Running in 01c3daffabe2
-Get:1 http://security.ubuntu.com trusty-security InRelease [65.9 kB]
-Ign http://archive.ubuntu.com trusty InRelease
-Get:2 http://archive.ubuntu.com trusty-updates InRelease [65.9 kB]
-Get:3 http://archive.ubuntu.com trusty-backports InRelease [65.9 kB]
-Get:4 http://archive.ubuntu.com trusty Release.gpg [933 B]
-Get:5 http://archive.ubuntu.com trusty Release [58.5 kB]
-Get:6 http://security.ubuntu.com trusty-security/universe Sources [80.1 kB]
-Get:7 http://archive.ubuntu.com trusty-updates/universe Sources [245 kB]
-Get:8 http://security.ubuntu.com trusty-security/main amd64 Packages [859 kB]
-Get:9 http://archive.ubuntu.com trusty-updates/main amd64 Packages [1293 kB]
-Get:10 http://security.ubuntu.com trusty-security/restricted amd64 Packages [18.0 kB]
-Get:11 http://security.ubuntu.com trusty-security/universe amd64 Packages [250 kB]
-Get:12 http://archive.ubuntu.com trusty-updates/restricted amd64 Packages [21.4 kB]
-Get:13 http://security.ubuntu.com trusty-security/multiverse amd64 Packages [4716 B]
-Get:14 http://archive.ubuntu.com trusty-updates/universe amd64 Packages [561 kB]
-Get:15 http://archive.ubuntu.com trusty-updates/multiverse amd64 Packages [16.3 kB]
-Get:16 http://archive.ubuntu.com trusty-backports/main amd64 Packages [14.7 kB]
-Get:17 http://archive.ubuntu.com trusty-backports/restricted amd64 Packages [40 B]
-Get:18 http://archive.ubuntu.com trusty-backports/universe amd64 Packages [52.5 kB]
-Get:19 http://archive.ubuntu.com trusty-backports/multiverse amd64 Packages [1392 B]
-Get:20 http://archive.ubuntu.com trusty/universe Sources [7926 kB]
-Get:21 http://archive.ubuntu.com trusty/main amd64 Packages [1743 kB]
-Get:22 http://archive.ubuntu.com trusty/restricted amd64 Packages [16.0 kB]
-Get:23 http://archive.ubuntu.com trusty/universe amd64 Packages [7589 kB]
-Get:24 http://archive.ubuntu.com trusty/multiverse amd64 Packages [169 kB]
-Fetched 21.1 MB in 24s (849 kB/s)
-Reading package lists...
- ---> bbdd2ef30da8
-Removing intermediate container 01c3daffabe2
-Successfully built bbdd2ef30da8
-```
-
-```Bash
-$ docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-myubuntu            latest              bbdd2ef30da8        35 seconds ago      242 MB
-...
-```

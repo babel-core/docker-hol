@@ -8,7 +8,7 @@
 
 ## Docker CLI 구성
 
-Docker CLI을 잘 모른다는 가정하에, 아무 생각하지 않고 터미널을 열고 `docker` 커맨드를 입력한다.  
+무작정 터미널을 열고 `docker` 커맨드를 입력하여 Docker CLI의 구성을 파악해보자.  
 
 ```Bash
 $ docker # docker --help와 동일한 결과
@@ -32,9 +32,7 @@ Commands:
 Run 'docker COMMAND --help' for more information on a command.
 ```
 
-터미널에 `docker`만을 입력하면, 위의 그림에서 보는 것과 같이 `Options`, `Management Commands`, `Commands`라는 3가지 커맨드 카테고리만 나타날 뿐 `docker` 커맨드만으로는 아무 동작도 수행할 수 없다. 그래서 docker는 `docker --help`에 해당하는 명령이 출력되고 수행을 종료한다.
-
- `docker`의 실제 수행은 `Options` 카테고리에 있는 tag들을 이용하여 docker 엔진의 설정 정보를 변경할 수 있으며, `Management Commands`와 `Commands` 카테고리에 나열된 보조 커맨드(sub-command)를 수행해야 한다.
+터미널에 `docker`만을 입력하면 동작은 하지 않고, `help`와 동일한 동작을 수행한다. 그리고 CLI는 3가지 커맨드 카테고리-`Options`, `Management Commands`, `Commands`-을 볼 수 있다. `docker engine`의 설정은 `Option`에 있는 인자를 이용하여 사용하는 것이고, `docker`의 실제 수행은 `Commands`와 `Management Commands`에 나열된 서브 커맨드(sub-command)를 조합하여 입력해야 수행된다.
 
 docker 커맨드에 구성되어 있는 Tag들과 보조 커맨드에 대하여 간략히 살펴보도록 한다.
 
@@ -42,10 +40,10 @@ docker 커맨드에 구성되어 있는 Tag들과 보조 커맨드에 대하여 
 
 Docker 엔진의 운영모드, 로깅수준 설정, TLS(Transport Layer Secure) 설정 등을 지원한다.
 
-```Bash
+```
 Options:
       --config string      Location of client config files (default
-                           "C:\Users\titicaca\.docker")
+                           "C:\Users\babel-core\.docker")
   -D, --debug              Enable debug mode
       --help               Print usage
   -H, --host list          Daemon socket(s) to connect to
@@ -70,7 +68,7 @@ $ docker --version
 Docker version 17.09.0-ce, build afdb6d4
 ```
 
-여기에서 눈여겨 볼 점은 TLS(Transport Layer Secure) 설정이 있는 것이다. TLS는 네트워크 통신에서 전송되는 데이터의 위변조를 막기 위한 전송 방식인데, 설정을 하는 이유는 무엇일까? ~~제가 이정도 알면 여기 없죠.~~ 아직은 모른다. 명확한건 ~~알면 제가 여기 없다는 겁니다.~~ docker의 또다른 커맨트들 살펴보니 version이라는 보조 커맨드가 있는 것이 보인다. 어떤 출력을 보여줄 지 터미널에 `docker version`을 입력하여 유추해보도록 한다.
+여기에서 눈여겨 볼 점은 TLS(Transport Layer Secure) 설정이 있는 것이다. TLS는 네트워크 통신에서 전송되는 데이터의 위변조를 막기 위한 전송 방식이다. 아직은 정확히 모르겠지만 언젠가 `docker engine`이 `docker CLI`가 동일한 컴퓨터에서 동작할 필요는 없을 것이라는 생각이 든다. 일단 터미널에 `docker version`을 입력해보자.
 
 ```Bash
 $ docker version
@@ -92,33 +90,13 @@ Server:
  Experimental: true
 ```
 
-위의 그림을 보면, Docker는 Client와 Server구조로 이원화되어 동작된다는 것을 알 수 있다. ~~아마도 Server인 Docker Engine과 Client인 Docker CLI가 아닐까 싶다.~~ 우리는 Client와 Server가 하나의 호스트에서 동작하여 인식하지 못하지만, Client와 Server는 분리가 가능할 것으로 보인다. ~~스터디에 이런 내용이 담길 수 있기를 기대합니다.~~
+위의 그림을 보면, 우리는 Client와 Server가 하나의 호스트에서 동작하여 인식하지 못하지만, Client와 Server는 분리하여 운영할 수 있을 것으로 유추할 수 있는 대목이다.
 
-### Management Commands
-
-Docker Engine의 동작을 제어하는 명령어를 가진다.
-
-```Bash
-Management Commands:
-  checkpoint  Manage checkpoints
-  config      Manage Docker configs
-  container   Manage containers
-  image       Manage images
-  network     Manage networks
-  node        Manage Swarm nodes
-  plugin      Manage plugins
-  secret      Manage Docker secrets
-  service     Manage services
-  stack       Manage Docker stacks
-  swarm       Manage Swarm
-  system      Manage Docker
-  volume      Manage volumes
-```
 ### Commands
 
-컨테이너의 동작을 제어하는 명령어를 가진다.
+Commands 컨테이너의 동작을 제어하는 명령어를 가진다.
 
-```Bash
+```
 Commands:
   attach      Attach local standard input, output, and error streams to a running container
   build       Build an image from a Dockerfile
@@ -162,10 +140,29 @@ Commands:
   version     Show the Docker version information
   wait        Block until one or more containers stop, then print their exit codes
 ```
-### 마치며
 
-~~저걸 다 알아야 한다니~ 삶이 고달프다.~~갈길이 멀긴 하지만, 천리도 한걸음 부터.~~아재인가 속담을..~~
+### Management Commands
 
+Management Commands 카테고리에는 Docker Engine의 동작을 제어하는 명령어를 가진다.
+
+```
+Management Commands:
+  checkpoint  Manage checkpoints
+  config      Manage Docker configs
+  container   Manage containers
+  image       Manage images
+  network     Manage networks
+  node        Manage Swarm nodes
+  plugin      Manage plugins
+  secret      Manage Docker secrets
+  service     Manage services
+  stack       Manage Docker stacks
+  swarm       Manage Swarm
+  system      Manage Docker
+  volume      Manage volumes
+```
+
+알아야 하는 것이 너무 많아 보인다. 일단 우리는 1개의 컨테이너를 동작시키는 것에 집중하고, 이에 필요한 요소가 무엇인지를 파악해보도록 하자.
 
 ## Docker 이미지와 컨터이너 다루기
 

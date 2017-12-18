@@ -1,14 +1,18 @@
-# Lab 2. Docker CLI를 이용하여 1개의 컨테이너 실행하기
+# Lab 2. Docker CLI로 컨테이너 운영하기
 
-현재까지 Docker를 실무에 사용하지 않는 나는 일관성, 유연함, 에코시스템 등에서 Docker의 매력에 푹빠졌다. 1년동안 Docker를 이용할 기회가 생길 때마다 패키지를 설치하는 대신 과감하게(?) Github과 Dockerhub에 공개된 Docker 이미지를 적용해보곤 하였다. 그대로 따라하는 경우 잘 동작하지만, 환경을 스스로 구축하게 되면, 내가 의도한 것과 다른 상황에 직면하게 되었다. 누군가에게는 일관성을 무기로 적용하는 시스템이 나를 외면하는 이유는 무엇일까? 이런 상황이 반복된다면, Docker를 이용하여 개발환경을 구축하기도 어렵고, 서비스를 구축하는 것은 불가능할 것이다.
+현재 Docker를 개발 업무나 서비스 운영에 사용하지 않는다. 그렇지만 간헐적인 경험을 통해 일관성, 유연함, 에코시스템 등에서 Docker에서 배울 점도 많고 서비스 자체의 매력에도 푹빠진 상태이다. 그래서 1년동안 Docker를 이용할 기회가 생길 때마다 패키지를 설치하는 대신 다른 개발자가 만들어 놓은 이미지를 Dockerhub과 Github에서 검색하여 Docker를 경험하게 되었다. 
 
-이런 경험 속에서 최근에 내가 무지했다는 것을 깨달았다. 나는 `Docker CLI`의 기본적인 사용법도 명확하게 파악하지 못하고 있다는 것을... 터미널에 수많은 Docker 커맨드를 입력하였지만, 내가 입력한 커맨드가 어떠한 컨테이너를 생성하는지? 내가 입력한 인자가 어떠한 의도를 가지는지? 잘 모른채 동작자체에만 집중하고 있었던 것이다. 그래서 남들이 만들어놓은 이미지와 남들이 만들어준 커맨드를 이용하면 문제없이 동작하지만, 내가 머릿 속으로 그린 관점을 그대로 옮기려고 하면, 운이 좋으면 잘 동작하고, 어딘가 다르게 동작하는 경우도 있었던 것이다. 이제는 동작자체보다는 정확하게 동작시키는 것에 집중해보자.
+이런 경우 그대로 따라하는 경우라면, 문제 없이 동작하였다. 하지만 조금이라도 변화를 시도하게 되면, 일관성 없이 정상동작과 이상동작을 반복하는 것이었다. 많은 개발자들이 일관성을 Docker의 첫 번째 무기라고 하지만 나에게는 예외인 이유는 무엇일까? 이런 상황이 반복된다면, Docker를 이용하여 서비스를 구축하는 것은 커녕, 팀의 개발환경을 구축하는 것에도 제안하기도 어려운  상황이다.  
 
-우선 Docker 컨테이너 1개를 잘 동작시키는 방법에 대해서 알아볼 것이다. 그러기 위해서는 `Docker CLI`에 대해 실습해 볼 것이다.
+최근에 깨달은 부분이 기본적인 사용법도 정확히 이해하지 않고 사용하고 있었다는 것이었다. Docker 커맨드와 Dockerfile을 정확히 이해하고 구현할 능력이 없다면  나의 행위가 어떠한 형상을 가진 컨테이너를 생성하는지? 내가 입력한 인자가 컨네이너의 구동방식을 어떻게 변하게 하는지? 정확하게 파악할 수 없다. 
 
-## Docker CLI 구성
+Docker를 오랫동안 경험하지는 않았지만, 매우 정교한 시스템이라는 것을 알 수 있다. 정교한 만큼 정확히 이해하지 못하면, Docker를 나의 관리영역 안에 둘 수 없다.  이제부터 동작자체보다는 정확하게 동작시키는 것에 집중하자.
 
-무작정 터미널을 열고 `docker` 커맨드를 입력하여 Docker CLI의 구성을 파악해보자.  
+이번 Lab에서는 단순화하여 Docker 컨테이너 1개를 동작시키는 방법에 집중적으로 알아볼 것이다. 
+
+## Docker의 구성
+
+본격적으로 `docker`를 시작하기 전에  터미널을 열고, 다음과 같이 입력한다.
 
 ```Bash
 $ docker # docker --help와 동일한 결과
@@ -31,143 +35,20 @@ Commands:
 
 Run 'docker COMMAND --help' for more information on a command.
 ```
+>우리는 터미널을 이용하여 시스템과 인터페이스하는 방식을 CLI(Command Line Interface)라고 한다. 그리고 Docker에서 정의한 CLI이기 때문에 우리는 이것을 Docker CLI라고 부를 것이다. 
 
-터미널에 `docker`만을 입력하면 동작은 하지 않고, `help`와 동일한 동작을 수행한다. 그리고 CLI는 3가지 커맨드 카테고리-`Options`, `Management Commands`, `Commands`-을 볼 수 있다. `docker engine`의 설정은 `Option`에 있는 인자를 이용하여 사용하는 것이고, `docker`의 실제 수행은 `Commands`와 `Management Commands`에 나열된 서브 커맨드(sub-command)를 조합하여 입력해야 수행된다.
+터미널에 `docker`라는 명령어는 그 자체로는 아무런 동작도 수행하지 않는다. 이 명령어는 다양한 명령어를 포함하고 있는 컨테이너라고 말할 수 있다. 따라서 `help`와 동일한 결과가 화면에 표시된다. 
+위의 화면의 자세히 살펴보면,  Docker는 3가지 커맨드 카테고리(`Options`, `Management Commands`, `Commands`)를 가지고 있는 것을 볼 수 있다.  `Option`카테고리는 docker engine의 설정을 위한 인자를 가지고 있으며, `docker`는 실제 `Commands`와 `Management Commands` 카테고리가 가지고 있는 서브 커맨드(sub-command)를 이용하여 동작을 수행한다.
+다음은 Docker CLI를 이용하여 컨테이너를 실행시키는 예이다. 
 
-docker 커맨드에 구성되어 있는 Tag들과 보조 커맨드에 대하여 간략히 살펴보도록 한다.
+> docker run -t -i --rm --name hello-ubuntu ubuntu:16.04 /bin/bash
 
-### Options
-
-Docker 엔진의 운영모드, 로깅수준 설정, TLS(Transport Layer Secure) 설정 등을 지원한다.
-
-```
-Options:
-      --config string      Location of client config files (default
-                           "C:\Users\babel-core\.docker")
-  -D, --debug              Enable debug mode
-      --help               Print usage
-  -H, --host list          Daemon socket(s) to connect to
-  -l, --log-level string   Set the logging level
-                           ("debug"|"info"|"warn"|"error"|"fatal")
-                           (default "info")
-      --tls                Use TLS; implied by --tlsverify
-      --tlscacert string   Trust certs signed only by this CA (default
-                           "C:\Users\titicaca\.docker\ca.pem")
-      --tlscert string     Path to TLS certificate file (default
-                           "C:\Users\titicaca\.docker\cert.pem")
-      --tlskey string      Path to TLS key file (default
-                           "C:\Users\titicaca\.docker\key.pem")
-      --tlsverify          Use TLS and verify the remote
-  -v, --version            Print version information and quit
-```
-
-이미 `docker --help`에 관해서는 언급하였고, --version을 한번 살펴보자.
-
-```Bash
-$ docker --version
-Docker version 17.09.0-ce, build afdb6d4
-```
-
-여기에서 눈여겨 볼 점은 TLS(Transport Layer Secure) 설정이 있는 것이다. TLS는 네트워크 통신에서 전송되는 데이터의 위변조를 막기 위한 전송 방식이다. 아직은 정확히 모르겠지만 언젠가 `docker engine`이 `docker CLI`가 동일한 컴퓨터에서 동작할 필요는 없을 것이라는 생각이 든다. 일단 터미널에 `docker version`을 입력해보자.
-
-```Bash
-$ docker version
-Client:
- Version:      17.09.0-ce
- API version:  1.32
- Go version:   go1.8.3
- Git commit:   afdb6d4
- Built:        Tue Sep 26 22:40:09 2017
- OS/Arch:      windows/amd64
-
-Server:
- Version:      17.09.0-ce
- API version:  1.32 (minimum version 1.12)
- Go version:   go1.8.3
- Git commit:   afdb6d4
- Built:        Tue Sep 26 22:45:38 2017
- OS/Arch:      linux/amd64
- Experimental: true
-```
-
-위의 그림을 보면, 우리는 Client와 Server가 하나의 호스트에서 동작하여 인식하지 못하지만, Client와 Server는 분리하여 운영할 수 있을 것으로 유추할 수 있는 대목이다.
-
-### Commands
-
-Commands 컨테이너의 동작을 제어하는 명령어를 가진다.
-
-```
-Commands:
-  attach      Attach local standard input, output, and error streams to a running container
-  build       Build an image from a Dockerfile
-  commit      Create a new image from a container's changes
-  cp          Copy files/folders between a container and the local filesystem
-  create      Create a new container
-  deploy      Deploy a new stack or update an existing stack
-  diff        Inspect changes to files or directories on a container's filesystem
-  events      Get real time events from the server
-  exec        Run a command in a running container
-  export      Export a container's filesystem as a tar archive
-  history     Show the history of an image
-  images      List images
-  import      Import the contents from a tarball to create a filesystem image
-  info        Display system-wide information
-  inspect     Return low-level information on Docker objects
-  kill        Kill one or more running containers
-  load        Load an image from a tar archive or STDIN
-  login       Log in to a Docker registry
-  logout      Log out from a Docker registry
-  logs        Fetch the logs of a container
-  pause       Pause all processes within one or more containers
-  port        List port mappings or a specific mapping for the container
-  ps          List containers
-  pull        Pull an image or a repository from a registry
-  push        Push an image or a repository to a registry
-  rename      Rename a container
-  restart     Restart one or more containers
-  rm          Remove one or more containers
-  rmi         Remove one or more images
-  run         Run a command in a new container
-  save        Save one or more images to a tar archive (streamed to STDOUT by default)
-  search      Search the Docker Hub for images
-  start       Start one or more stopped containers
-  stats       Display a live stream of container(s) resource usage statistics
-  stop        Stop one or more running containers
-  tag         Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
-  top         Display the running processes of a container
-  unpause     Unpause all processes within one or more containers
-  update      Update configuration of one or more containers
-  version     Show the Docker version information
-  wait        Block until one or more containers stop, then print their exit codes
-```
-
-### Management Commands
-
-Management Commands 카테고리에는 Docker Engine의 동작을 제어하는 명령어를 가진다.
-
-```
-Management Commands:
-  checkpoint  Manage checkpoints
-  config      Manage Docker configs
-  container   Manage containers
-  image       Manage images
-  network     Manage networks
-  node        Manage Swarm nodes
-  plugin      Manage plugins
-  secret      Manage Docker secrets
-  service     Manage services
-  stack       Manage Docker stacks
-  swarm       Manage Swarm
-  system      Manage Docker
-  volume      Manage volumes
-```
-
-알아야 하는 것이 너무 많아 보인다. 일단 우리는 1개의 컨테이너를 동작시키는 것에 집중하고, 이에 필요한 요소가 무엇인지를 파악해보도록 하자.
+Docker CLI의 세부적인 내용을 모두 다루는 것은 1개의 컨테이너를 다루는 것에는 벗어나는 영역이기 때문에 카테고리의 자세한 내용은 별도의 섹션을 할당하여 기술하는 것이 바람직할 것으로 보인다. (Appendix 1) 
 
 ## Docker 컨터이너 실행하기
 
-Docker 컨테이너를 실행하기 위해서는 `docker run (blah)(blah)(blah)` 커맨드를 입력해야 한다.
-정확한 사용법을 파악하기 위하여 터미널에 `docker run --help` 입력한다.
+Docker 컨테이너를 실행하기 위해서는 위에서 언급한 예와 같이 `docker run`이라는 커맨드를 사용한다. 
+정확한 사용법을 알아보기 위하여 터미널에 `docker run --help` 입력한다.
 
 ```Bash
 $ docker run --help                                                           

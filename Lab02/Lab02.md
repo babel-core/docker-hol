@@ -207,8 +207,7 @@ Name | Command Options | Description
 -------- | ------------------------------ | ---------------------------------
 detach |-d, --detach              |           Run container in background and print container ID
 env |  -e, --env list           |            Set environment variables              
-interactive | -i, --interactive           |         Keep STDIN open even if not attached   
-link |    --link list              |        Add link to another container          
+interactive | -i, --interactive           |         Keep STDIN open even if not attached            
 name |    --name string             |       Assign a name to the container         
 rm |    --rm                       |      Automatically remove the container when it exits
 tty | -t, --tty                       |     Allocate a pseudo-TTY                  
@@ -216,10 +215,10 @@ volume | -v, --volume list                |    Bind mount a volume
 port | -p, --publish list       |           Publish a container's port(s) to the host
 workdir | -w, --workdir list       |           Working directory inside the container
 
-여기서는 `busybox`라는 Docker에서 제공하는 공식 이미지를 이용하여 기본 동작을 이해할 것이다.
+여기서는 `busybox`라는 Docker에서 제공하는 공식 이미지를 가지고 기본 동작을 이해할 것이다.
 
 ### 1. 터미널에 `docker images` 입력
-`busybox`를 실행하기에 앞서 내가 보유한 이미지를 확인하기 위한 선행학습을 시작할 것이다. 현재 내가 보유하고 있는 이미지를 살펴보기 위해서는 터미널에 `docker images`를 입력하면 된다.
+`busybox`를 실행하기에 앞서 내가 가진 이미지 리스트를 조회하는 기능에 대하여 살펴보자. 화면에 이미지 리스트를 확인하는 CLI는 터미널에 `docker images`라고 입력한다.
 
 ```Bash
 $ docker images

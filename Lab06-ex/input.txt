@@ -1,0 +1,6 @@
+curl http://localhost:9200/products/products/1 -d '{"name" : "Ice cream"}'
+curl http://localhost:9200/products/products/1 -d '{"name" : "Chocolate"}'
+curl http://localhost:9200/products/products/1 -d '{"name" : "Fruit"}'
+curl http://localhost:9200/products/products/1 -d '{"name" : "Eggs"}'
+
+curl http://localhost:9200/products/_search

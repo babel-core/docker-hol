@@ -1,6 +1,6 @@
 curl -XPUT http://localhost:9200/products/products/1 -d '{"name" : "Ice cream"}'
-curl -XPUT http://localhost:9200/products/products/1 -d '{"name" : "Chocolate"}'
-curl -XPUT http://localhost:9200/products/products/1 -d '{"name" : "Fruit"}'
-curl -XPUT http://localhost:9200/products/products/1 -d '{"name" : "EggsX}'
+curl -XPUT http://localhost:9200/products/products/2 -d '{"name" : "Chocolate"}'
+curl -XPUT http://localhost:9200/products/products/3 -d '{"name" : "Fruit"}'
+curl -XPUT http://localhost:9200/products/products/4 -d '{"name" : "Egg"}'
 
 curl -XGET http://localhost:9200/products/_search
